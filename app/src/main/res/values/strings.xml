@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">Baking</string>
+    <string name="next_step">Next Step</string>
+    <string name="previous_step">Previous Step</string>
+    <string name="ingredients_for">Ingredients for</string>
+    <string name="ingredients_list">Ingredients List</string>
+    <string name="step_label">Step</string>
+    <string name="add_widget">Add widget</string>
+    <string name="baking_json_url">https://d17h27t6h515a5.cloudfront.net/topher/2017/May/59121517_baking/baking.json</string>
+    <string name="network_error_msg">No Network Connection available, Please try again later</string>
+    <string name="ingredient_label">Ingredient:</string>
+    <string name="widget_title">Baking Recipe List</string>
+    <string name="widget_no_connection_error">No internet connection</string>
+</resources>
