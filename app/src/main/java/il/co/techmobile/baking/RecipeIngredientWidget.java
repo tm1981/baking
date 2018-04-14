@@ -17,8 +17,10 @@ import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import il.co.techmobile.baking.modal.Baking;
+import il.co.techmobile.baking.modal.Ingredient;
 import il.co.techmobile.baking.utilities.NetworkHelper;
 import il.co.techmobile.baking.utilities.ParseJson;
 
@@ -50,17 +52,24 @@ public class RecipeIngredientWidget extends AppWidgetProvider {
 
                         //ArrayList<Baking> list = new ArrayList<>(Arrays.asList(bakings));
 
-                        ArrayList<String> list = new ArrayList<>();
 
-                        for (Baking baking : bakings) {
-                            list.add(baking.getName());
+                        List<Ingredient> ingredients = bakings[1].getIngredients();
+                        ArrayList<String> list = new ArrayList<>();
+                        ArrayList<String> quantity = new ArrayList<>();
+                        ArrayList<String> measure = new ArrayList<>();
+
+                        for (Ingredient ingredient : ingredients) {
+                            list.add(ingredient.getIngredient());
+                            quantity.add(String.valueOf(ingredient.getQuantity()));
+                            measure.add(ingredient.getMeasure());
                         }
 
                         RemoteViews views = new RemoteViews(context.getPackageName(), R.layout.recipe_ingredient_widget);
 
                         Intent intent = new Intent(context, ListWidgetService.class);
                         intent.putStringArrayListExtra("list",list);
-
+                        intent.putStringArrayListExtra("quantity",quantity);
+                        intent.putStringArrayListExtra("measure",measure);
 
                         Intent clickIntentTemplate = new Intent(context,MainActivity.class);
                         PendingIntent clickPendingIntentTemplate = TaskStackBuilder.create(context)
@@ -70,6 +79,8 @@ public class RecipeIngredientWidget extends AppWidgetProvider {
                         views.setPendingIntentTemplate(R.id.widget_list, clickPendingIntentTemplate);
 
                         views.setRemoteAdapter(R.id.widget_list,intent);
+                        String widgetTitle = "Ingredients for " + bakings[1].getName();
+                        views.setTextViewText(R.id.widget_title,widgetTitle);
                         views.setViewVisibility(R.id.text_view_no_connection, View.GONE);
                         views.setViewVisibility(R.id.widget_list,View.VISIBLE);
                         appWidgetManager.updateAppWidget(appWidgetId, views);

@@ -10,5 +10,7 @@
     <string name="network_error_msg">No Network Connection available, Please try again later</string>
     <string name="ingredient_label">Ingredient:</string>
     <string name="widget_title">Baking Recipe List</string>
+    <string name="quantity_label">Quantity:</string>
+    <string name="measure_label">Measure unit:</string>
     <string name="widget_no_connection_error">No internet connection</string>
 </resources>

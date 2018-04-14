@@ -13,7 +13,27 @@
         android:padding="10dp"
         android:textAppearance="@style/TextAppearance.AppCompat.Headline"
         android:textSize="18sp"
-        tools:text="item" />
+        tools:text="ingredient Name" />
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:padding="10dp"
+            android:id="@+id/widget_quantity"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="Quantity: 10"/>
+        <TextView
+            android:padding="10dp"
+            android:id="@+id/widget_measure_unit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            tools:text="Measure Unit: CUP"/>
+    </LinearLayout>
+
 
 
 </LinearLayout>

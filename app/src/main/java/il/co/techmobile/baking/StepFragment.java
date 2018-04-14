@@ -64,6 +64,12 @@ public class StepFragment extends Fragment {
     public StepFragment() {
     }
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setRetainInstance(true);
+    }
+
     @SuppressLint("ClickableViewAccessibility")
     @Nullable
     @Override
@@ -218,22 +224,44 @@ public class StepFragment extends Fragment {
         outState.putInt(LIST_INDEX,stepIndex);
         outState.putParcelableArrayList(STEPS_LIST, (ArrayList<? extends Parcelable>) steps);
         if (simpleExoPlayer != null) {
+            playerPosition = simpleExoPlayer.getContentPosition();
             outState.putLong("player_position",simpleExoPlayer.getContentPosition());
             outState.putBoolean("playing",simpleExoPlayer.getPlayWhenReady());
         }
 
     }
 
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        if (Util.SDK_INT > 23) {
+            VideoPlayer();
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if ((Util.SDK_INT <= 23 || simpleExoPlayer == null)) {
+            VideoPlayer();
+        }
+    }
+
     @Override
     public void onStop() {
         super.onStop();
-        ReleasePlayer();
+        if (Util.SDK_INT > 23) {
+            ReleasePlayer();
+        }
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        ReleasePlayer();
+        if (Util.SDK_INT <= 23) {
+            ReleasePlayer();
+        }
     }
 
     private void VideoPlayer () {

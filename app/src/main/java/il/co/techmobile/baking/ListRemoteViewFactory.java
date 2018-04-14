@@ -12,9 +12,11 @@ class ListRemoteViewFactory implements RemoteViewsService.RemoteViewsFactory {
 
     private final Context mContext;
     private List<String> list = new ArrayList<>();
+    private List<String> quantity = new ArrayList<>();
+    private List<String> measure = new ArrayList<>();
     private final Intent intent;
 
-    public ListRemoteViewFactory(Context applicationContext,Intent intent) {
+    ListRemoteViewFactory(Context applicationContext, Intent intent) {
         this.mContext = applicationContext;
         this.intent = intent;
 
@@ -24,6 +26,8 @@ class ListRemoteViewFactory implements RemoteViewsService.RemoteViewsFactory {
     public void onCreate() {
 
         list = intent.getStringArrayListExtra("list");
+        quantity = intent.getStringArrayListExtra("quantity");
+        measure = intent.getStringArrayListExtra("measure");
 
     }
 
@@ -56,12 +60,10 @@ class ListRemoteViewFactory implements RemoteViewsService.RemoteViewsFactory {
         RemoteViews views = new RemoteViews(mContext.getPackageName(),R.layout.widget_list_item);
         views.setTextViewText(R.id.widget_list_item,list.get(position));
 
-        Intent fillIntent = new Intent();
-
-
-        fillIntent.putExtra("position",position);
-        fillIntent.putExtra("widget","widget");
-        views.setOnClickFillInIntent(R.id.widget_list_item,fillIntent);
+        String quantityItem = mContext.getString(R.string.quantity_label) + " " + this.quantity.get(position);
+        String measureItem = mContext.getString(R.string.measure_label) + " " + this.measure.get(position);
+        views.setTextViewText(R.id.widget_quantity,quantityItem);
+        views.setTextViewText(R.id.widget_measure_unit,measureItem);
 
         return views;
 
