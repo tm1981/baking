@@ -60,20 +60,19 @@ public class StepFragment extends Fragment {
     private boolean isPlaying;
     private boolean isFullScreen = true;
     private boolean isTablet = false;
+    private Bundle bundle;
 
     public StepFragment() {
     }
 
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setRetainInstance(true);
-    }
+
 
     @SuppressLint("ClickableViewAccessibility")
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+
+
 
         if(savedInstanceState != null) {
             stepIndex = savedInstanceState.getInt(LIST_INDEX);
@@ -153,7 +152,7 @@ public class StepFragment extends Fragment {
         SetData(stepIndex);
 
         numberOfSteps = steps.size();
-        VideoPlayer();
+        //VideoPlayer();
 
         nextButton.setOnClickListener(new View.OnClickListener(){
 
@@ -164,11 +163,15 @@ public class StepFragment extends Fragment {
                     ReleasePlayer();
                     VideoPlayer();
                     SetData(stepIndex);
+                    isPlaying = false;
+                    playerPosition = 0;
                 } else {
                     stepIndex = 0;
                     ReleasePlayer();
                     VideoPlayer();
                     SetData(stepIndex);
+                    isPlaying = false;
+                    playerPosition = 0;
                 }
             }
         });
@@ -182,11 +185,15 @@ public class StepFragment extends Fragment {
                         ReleasePlayer();
                         VideoPlayer();
                         SetData(stepIndex);
+                        isPlaying = false;
+                        playerPosition = 0;
                     } else {
                         stepIndex = numberOfSteps - 1;
                         ReleasePlayer();
                         VideoPlayer();
                         SetData(stepIndex);
+                        isPlaying = false;
+                        playerPosition = 0;
                     }
 
                 }
@@ -214,9 +221,7 @@ public class StepFragment extends Fragment {
             if (actionBar != null && !isTablet) {
                 actionBar.setTitle(steps.get(position).getShortDescription());
             }
-
         }
-
     }
 
     @Override
@@ -224,10 +229,10 @@ public class StepFragment extends Fragment {
         outState.putInt(LIST_INDEX,stepIndex);
         outState.putParcelableArrayList(STEPS_LIST, (ArrayList<? extends Parcelable>) steps);
         if (simpleExoPlayer != null) {
-            playerPosition = simpleExoPlayer.getContentPosition();
             outState.putLong("player_position",simpleExoPlayer.getContentPosition());
             outState.putBoolean("playing",simpleExoPlayer.getPlayWhenReady());
         }
+        bundle = outState;
 
     }
 
@@ -235,6 +240,9 @@ public class StepFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
+        if (bundle != null) {
+            playerPosition = bundle.getLong("player_position");
+        }
         if (Util.SDK_INT > 23) {
             VideoPlayer();
         }

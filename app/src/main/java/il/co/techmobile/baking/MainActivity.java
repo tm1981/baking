@@ -84,35 +84,10 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
                     public void onResponse(String response) {
 
                         bakings = new ParseJson(response).Parse();
-
-                        Intent intent = getIntent();
-                        String widget = intent.getStringExtra("widget");
-                        if (widget != null && widget.equals("widget"))  {
-                            int position = intent.getIntExtra("position",0);
-                            Baking baking = bakings[position];
-                            boolean isTablet = getResources().getBoolean(R.bool.isTablet);
-                            Intent ingIntent;
-                            if (isTablet) {
-
-                                ingIntent = new Intent(MainActivity.this,DetailActivity.class);
-
-                            } else {
-                                ingIntent = new Intent(MainActivity.this,IngredientsActivity.class);
-                            }
-
-                            ingIntent.putExtra("baking",baking);
-                            startActivity(ingIntent);
-                        } else {
-                            adapter = new RecyclerViewAdapter(getApplicationContext(),bakings);
-                            adapter.setClickListener(MainActivity.this);
-                            recyclerView.setAdapter(adapter);
-                            progressBar.setVisibility(View.INVISIBLE);
-                        }
-
-
-
-
-
+                        adapter = new RecyclerViewAdapter(getApplicationContext(),bakings);
+                        adapter.setClickListener(MainActivity.this);
+                        recyclerView.setAdapter(adapter);
+                        progressBar.setVisibility(View.INVISIBLE);
                     }
                 }, new Response.ErrorListener() {
             @Override
@@ -141,9 +116,6 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
             errorTV.setVisibility(View.VISIBLE);
         }
 
-
-
-
     }
 
     @Override
@@ -156,9 +128,7 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
 
     @Override
     public void onItemClick(int position) {
-
         HandleItemClick(position,bakings);
-
     }
 
     private void HandleItemClick(int position, Baking[] bakings) {
@@ -167,7 +137,6 @@ public class MainActivity extends AppCompatActivity implements RecyclerViewAdapt
                 Baking baking = bakings[position];
                 Intent intent = new Intent(MainActivity.this,DetailActivity.class);
                 intent.putExtra("baking",baking);
-
                 startActivity(intent);
             }
 

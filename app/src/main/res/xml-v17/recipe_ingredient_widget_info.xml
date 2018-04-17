@@ -7,5 +7,6 @@
     android:minResizeHeight="40dp"
     android:previewImage="@drawable/baking_widget_img"
     android:resizeMode="horizontal|vertical"
+    android:configure="il.co.techmobile.baking.AppWidgetConfigure"
     android:updatePeriodMillis="86400000"
     android:widgetCategory="home_screen" />

@@ -32,15 +32,18 @@ public class RecipeIngredientWidget extends AppWidgetProvider {
     private static final String TAG = "baking_request";
     private static Baking[] bakings;
     private static RequestQueue queue;
+    static int position;
 
 
 
-    private static void updateAppWidget(final Context context, final AppWidgetManager appWidgetManager,
+    static void updateAppWidget(final Context context, final AppWidgetManager appWidgetManager,
                                         final int appWidgetId) {
 
+
+
+        position = AppWidgetConfigure.getPosition(context,appWidgetId);
         queue = Volley.newRequestQueue(context);
         String url =context.getString(R.string.baking_json_url);
-
 
         // Request a string response from the provided URL.
         StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
@@ -50,10 +53,7 @@ public class RecipeIngredientWidget extends AppWidgetProvider {
 
                         bakings = new ParseJson(response).Parse();
 
-                        //ArrayList<Baking> list = new ArrayList<>(Arrays.asList(bakings));
-
-
-                        List<Ingredient> ingredients = bakings[1].getIngredients();
+                        List<Ingredient> ingredients = bakings[position].getIngredients();
                         ArrayList<String> list = new ArrayList<>();
                         ArrayList<String> quantity = new ArrayList<>();
                         ArrayList<String> measure = new ArrayList<>();
@@ -79,7 +79,7 @@ public class RecipeIngredientWidget extends AppWidgetProvider {
                         views.setPendingIntentTemplate(R.id.widget_list, clickPendingIntentTemplate);
 
                         views.setRemoteAdapter(R.id.widget_list,intent);
-                        String widgetTitle = "Ingredients for " + bakings[1].getName();
+                        String widgetTitle = "Ingredients for " + bakings[position].getName();
                         views.setTextViewText(R.id.widget_title,widgetTitle);
                         views.setViewVisibility(R.id.text_view_no_connection, View.GONE);
                         views.setViewVisibility(R.id.widget_list,View.VISIBLE);
@@ -101,17 +101,12 @@ public class RecipeIngredientWidget extends AppWidgetProvider {
             views.setViewVisibility(R.id.text_view_no_connection, View.VISIBLE);
             views.setViewVisibility(R.id.widget_list,View.GONE);
             appWidgetManager.updateAppWidget(appWidgetId, views);
-
         }
-
-
-
 
     }
 
     @Override
     public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
-        // There may be multiple widgets active, so update all of them
         for (int appWidgetId : appWidgetIds) {
             updateAppWidget(context, appWidgetManager, appWidgetId);
 
