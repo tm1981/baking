@@ -1,6 +1,5 @@
 package il.co.techmobile.baking;
 
-import android.annotation.SuppressLint;
 import android.appwidget.AppWidgetManager;
 import android.content.Context;
 import android.content.Intent;
@@ -20,11 +19,13 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import il.co.techmobile.baking.modal.Baking;
+import il.co.techmobile.baking.modal.Ingredient;
 import il.co.techmobile.baking.utilities.NetworkHelper;
 import il.co.techmobile.baking.utilities.ParseJson;
 
@@ -56,6 +57,41 @@ public class AppWidgetConfigure extends AppCompatActivity {
 
         setContentView(R.layout.activity_app_widget_configure);
 
+        RequestQueue queue = Volley.newRequestQueue(this);
+        String url =getString(R.string.baking_json_url);
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+
+                        bakings = new ParseJson(response).Parse();
+                        List<String> recipes = new ArrayList<>();
+                        for (Baking baking : bakings) {
+                            recipes.add(baking.getName());
+                        }
+
+                        ArrayAdapter arrayAdapter = new ArrayAdapter<>(AppWidgetConfigure.this, android.R.layout.simple_list_item_1,android.R.id.text1, recipes);
+                        ListView listView = findViewById(R.id.list_view_recipes);
+                        listView.setAdapter(arrayAdapter);
+                        listView.setOnItemClickListener(onItemClickListener);
+
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+
+            }
+        });
+        boolean networkOk = NetworkHelper.hasNetworkAccess(this);
+        if (networkOk) {
+            // Add the request to the RequestQueue.
+            queue.add(stringRequest);
+            stringRequest.setTag(TAG);
+
+        } else {
+            Toast.makeText(this, R.string.network_error_msg,Toast.LENGTH_LONG).show();
+        }
+
         Intent intent = getIntent();
         Bundle extras = intent.getExtras();
         if (extras != null) {
@@ -70,76 +106,100 @@ public class AppWidgetConfigure extends AppCompatActivity {
             return;
         }
 
-
         ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) {
             actionBar.setTitle("Select a recipe");
         }
-
-        RequestQueue queue = Volley.newRequestQueue(this);
-        String url =getString(R.string.baking_json_url);
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-
-                        bakings = new ParseJson(response).Parse();
-
-                        List<String> recipes = new ArrayList<>();
-
-                        for (Baking baking : bakings) {
-                            recipes.add(baking.getName());
-                        }
+    }
 
 
-                        ArrayAdapter arrayAdapter = new ArrayAdapter<>(AppWidgetConfigure.this, android.R.layout.simple_list_item_1,android.R.id.text1, recipes);
-                        ListView listView = findViewById(R.id.list_view_recipes);
-                        listView.setAdapter(arrayAdapter);
-                        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-                            @SuppressLint("ApplySharedPref")
-                            @Override
-                            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                                Context context = AppWidgetConfigure.this;
-                                WidgetItem(position,context,mAppWidgetId);
-                            }
-                        });
+    private final AdapterView.OnItemClickListener onItemClickListener = new AdapterView.OnItemClickListener() {
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
-                    }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
+            Context context = AppWidgetConfigure.this;
+            List<Ingredient> ingredients = bakings[position].getIngredients();
 
+            ArrayList<String> list1 = new ArrayList<>();
+            ArrayList<String> quantity1 = new ArrayList<>();
+            ArrayList<String> measure1 = new ArrayList<>();
+
+            String title = "Ingredients for " + bakings[position].getName();
+
+            for (Ingredient ingredient : ingredients) {
+                list1.add(ingredient.getIngredient());
+                quantity1.add(String.valueOf(ingredient.getQuantity()));
+                measure1.add(ingredient.getMeasure());
             }
-        });
 
-        boolean networkOk = NetworkHelper.hasNetworkAccess(this);
-        if (networkOk) {
-            // Add the request to the RequestQueue.
-            queue.add(stringRequest);
-            stringRequest.setTag(TAG);
+            String listJson = new Gson().toJson(list1);
+            String quantityJson = new Gson().toJson(quantity1);
+            String measureJson = new Gson().toJson(measure1);
 
-        } else {
-            Toast.makeText(this, R.string.network_error_msg,Toast.LENGTH_LONG).show();
+
+            saveData(context,mAppWidgetId,title,listJson,quantityJson,measureJson);
+
+
+            AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
+            RecipeIngredientWidget.updateAppWidget(context, appWidgetManager, mAppWidgetId);
+
+            // Make sure we pass back the original appWidgetId
+            Intent resultValue = new Intent();
+            resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, mAppWidgetId);
+            setResult(RESULT_OK, resultValue);
+            finish();
+
         }
+    };
 
-    }
-
-    private void WidgetItem(int position, Context context, int appWidgetId) {
-        SharedPreferences.Editor prefs = context.getSharedPreferences(PREFS_NAME,0).edit();
-        prefs.putInt(PREF_PREFIX_KEY + appWidgetId, position);
-        prefs.apply();
-
-        AppWidgetManager appWidgetManager = AppWidgetManager.getInstance(context);
-        RecipeIngredientWidget.updateAppWidget(context, appWidgetManager, mAppWidgetId);
-
-        Intent resultValue = new Intent();
-        resultValue.putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, mAppWidgetId);
-        setResult(RESULT_OK, resultValue);
-        finish();
-    }
-
-    static int getPosition(Context context, int appWidgetId) {
+    static String loadList(Context context, int appWidgetId) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, 0);
-        return prefs.getInt(PREF_PREFIX_KEY + appWidgetId, 0);
+        String list = prefs.getString("list" + appWidgetId, null);
+        if (list != null) {
+            return list;
+        } else {
+            return null;
+        }
     }
+
+    static String loadQuantityList(Context context, int appWidgetId) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, 0);
+        String list = prefs.getString("quantity" + appWidgetId, null);
+        if (list != null) {
+            return list;
+        } else {
+            return null;
+        }
+    }
+
+    static String loadMeasureList(Context context, int appWidgetId) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, 0);
+        String list = prefs.getString("measure" + appWidgetId, null);
+        if (list != null) {
+            return list;
+        } else {
+            return null;
+        }
+    }
+
+    static String loadTitlePref(Context context, int appWidgetId) {
+        SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, 0);
+        String titleValue = prefs.getString(PREF_PREFIX_KEY + appWidgetId, null);
+        if (titleValue != null) {
+            return titleValue;
+        } else {
+            return null;
+        }
+    }
+
+    private static void saveData(Context context, int appWidgetId, String title, String list, String quantity, String measure) {
+        SharedPreferences.Editor prefs = context.getSharedPreferences(PREFS_NAME, 0).edit();
+        prefs.putString(PREF_PREFIX_KEY + appWidgetId, title);
+        prefs.putString("list" + appWidgetId,list);
+        prefs.putString("quantity" + appWidgetId,quantity);
+        prefs.putString("measure" + appWidgetId,measure);
+
+        prefs.apply();
+    }
+
 }

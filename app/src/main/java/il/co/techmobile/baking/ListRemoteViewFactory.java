@@ -19,7 +19,6 @@ class ListRemoteViewFactory implements RemoteViewsService.RemoteViewsFactory {
     ListRemoteViewFactory(Context applicationContext, Intent intent) {
         this.mContext = applicationContext;
         this.intent = intent;
-
     }
 
     @Override
